@@ -1,0 +1,34 @@
+name: Docker Build and Push CI
+
+on:
+  push:
+    branches:
+      - main  # main 브랜치에 코드가 push 될 때만 작동
+
+jobs:
+  docker-build-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          # Docker Hub 사용자명과 이미지 이름을 태그로 설정 (fashion-ai-mvp)
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/fashion-ai-mvp:latest
+          # 빌드 캐시를 활용해 재빌드 속도 최적화
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/fashion-ai-mvp:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/fashion-ai-mvp:buildcache,mode=max
