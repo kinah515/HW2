@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion AI Coordinator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--bg-color) 0%, #171717 100%);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 650px;
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 30px rgba(96, 165, 250, 0.3);
+        }
+
+        p.subtitle {
+            color: var(--text-sub);
+            margin-bottom: 2.5rem;
+            font-size: 1.1rem;
+        }
+
+        .search-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 8px;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        input {
+            flex: 1;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 1.05rem;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: #64748b;
+        }
+
+        button {
+            padding: 0 30px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: white;
+            font-weight: 600;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #475569;
+            color: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .result-card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .result-card.active {
+            opacity: 1;
+            transform: translateY(0);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .product-image-wrapper {
+            background: #ffffff;
+            width: 100%;
+            height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: transform 0.5s ease;
+        }
+        
+        .product-image:hover {
+            transform: scale(1.05);
+        }
+
+        .info {
+            padding: 30px;
+            text-align: left;
+        }
+
+        .info h3 {
+            margin: 0 0 15px 0;
+            color: var(--text-main);
+            font-size: 1.4rem;
+            line-height: 1.4;
+        }
+
+        .recommendation {
+            background: rgba(139, 92, 246, 0.15);
+            border-left: 4px solid #a78bfa;
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            line-height: 1.7;
+            color: #e2e8f0;
+            font-size: 1.05rem;
+            position: relative;
+        }
+
+        .recommendation::before {
+            content: '✨';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            font-size: 1.5rem;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #a78bfa;
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Skeleton loading effect */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Fashion AI</h1>
+        <p class="subtitle">무신사 상품 링크를 넣고 나만의 특별한 OOTD를 추천받아보세요.</p>
+
+        <div class="search-box">
+            <input type="text" id="urlInput" placeholder="https://www.musinsa.com/app/goods/..." autocomplete="off">
+            <button id="submitBtn">추천받기</button>
+        </div>
+
+        <div class="spinner" id="spinner"></div>
+
+        <div class="result-card" id="resultCard" style="display: none;">
+            <div class="product-image-wrapper">
+                <img src="" alt="상품 이미지" class="product-image" id="productImage">
+            </div>
+            <div class="info">
+                <h3 id="productTitle"></h3>
+                <div class="recommendation" id="ootdText"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const submitBtn = document.getElementById('submitBtn');
+        const urlInput = document.getElementById('urlInput');
+        const spinner = document.getElementById('spinner');
+        const resultCard = document.getElementById('resultCard');
+        
+        const productImage = document.getElementById('productImage');
+        const productTitle = document.getElementById('productTitle');
+        const ootdText = document.getElementById('ootdText');
+
+        submitBtn.addEventListener('click', async () => {
+            const url = urlInput.value.trim();
+            if (!url) {
+                alert("무신사 상품 URL을 입력해주세요!");
+                return;
+            }
+
+            // Reset UI
+            resultCard.classList.remove('active');
+            setTimeout(() => { resultCard.style.display = 'none'; }, 300);
+            
+            // Show Spinner
+            spinner.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.textContent = '분석 중...';
+
+            try {
+                // Call actual backend API
+                const response = await fetch('/recommend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
+
+                if (!response.ok) {
+                    throw new Error("정보를 가져오는 데 실패했습니다. 무신사 URL이 맞는지 확인해주세요.");
+                }
+
+                const data = await response.json();
+
+                // Map data to DOM
+                productTitle.textContent = data.title;
+                productImage.src = data.image_url;
+                ootdText.textContent = data.ootd_recommendation;
+
+                // Stop Spinner
+                spinner.style.display = 'none';
+                
+                // Show Result Card with animation
+                resultCard.style.display = 'flex';
+                // Small delay to ensure display:flex is applied before opacity transition
+                setTimeout(() => resultCard.classList.add('active'), 50);
+
+            } catch (error) {
+                alert("오류 발생: " + error.message);
+                spinner.style.display = 'none';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '추천받기';
+            }
+        });
+
+        // Enter key support
+        urlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') submitBtn.click();
+        });
+    </script>
+</body>
+</html>

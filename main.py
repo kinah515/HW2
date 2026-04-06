@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import httpx
 from bs4 import BeautifulSoup
+from fastapi.responses import FileResponse
 
 app = FastAPI(
     title="Fashion AI MVP",
@@ -19,9 +20,9 @@ class RecommendationResponse(BaseModel):
     image_url: str | None
     ootd_recommendation: str
 
-@app.get("/")
+@app.get("/", response_class=FileResponse)
 async def root():
-    return {"message": "Fashion AI MVP API 서버가 실행 중입니다."}
+    return FileResponse("index.html")
 
 @app.post("/recommend", response_model=RecommendationResponse)
 async def get_recommendation(request: UrlRequest):
