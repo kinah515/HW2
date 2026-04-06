@@ -5,6 +5,9 @@ on:
     branches:
       - main  # main 브랜치에 코드가 push 될 때만 작동
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   docker-build-push:
     runs-on: ubuntu-latest
