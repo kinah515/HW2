@@ -48,7 +48,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Pull latest image
-        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/fashion-ai-mvp:latest
+        run: docker pull --platform linux/amd64 ${{ secrets.DOCKERHUB_USERNAME }}/fashion-ai-mvp:latest
 
       - name: Stop and remove existing container (if running)
         run: |
@@ -58,6 +58,7 @@ jobs:
       - name: Run new container
         run: |
           docker run -d \
+            --platform linux/amd64 \
             --name fashion-ai-mvp \
             -p 8000:8000 \
             --restart unless-stopped \
