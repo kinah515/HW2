@@ -1,4 +1,4 @@
-name: Docker Build and Push CI
+name: CI/CD Pipeline
 
 on:
   push:
@@ -35,3 +35,30 @@ jobs:
           # 빌드 캐시를 활용해 재빌드 속도 최적화
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/fashion-ai-mvp:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/fashion-ai-mvp:buildcache,mode=max
+
+  deploy-to-local:
+    needs: docker-build-push # 빌드 잡이 성공적으로 끝나야만 실행됨
+    runs-on: self-hosted     # 로컬 컴퓨터에 등록된 런너로 실행됨
+
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Pull latest image
+        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/fashion-ai-mvp:latest
+
+      - name: Stop and remove existing container (if running)
+        run: |
+          docker stop fashion-ai-mvp || true
+          docker rm fashion-ai-mvp || true
+
+      - name: Run new container
+        run: |
+          docker run -d \
+            --name fashion-ai-mvp \
+            -p 8000:8000 \
+            --restart unless-stopped \
+            ${{ secrets.DOCKERHUB_USERNAME }}/fashion-ai-mvp:latest
